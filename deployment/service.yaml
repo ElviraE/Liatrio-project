@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: timestampapi-k8s-service
+spec:
+  selector:
+    app: timestampapi-k8s
+  ports:
+    - protocol: "TCP"
+      port: 80
+      targetPort: 5000
+  type: LoadBalancer

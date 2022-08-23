@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timestampapi-deployment
+spec:
+  selector:
+    matchLabels:
+      app: timestampapi-k8s
+  template:
+    metadata:
+      labels:
+        app: timestampapi-k8s
+    spec:
+      containers:
+        - name: timestampapi-k8s
+          image: {{Image_Uri}}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
