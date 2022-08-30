@@ -1,11 +1,10 @@
 ##  EKS CLUSTER FOR DOCKERISED FLASK API WITH (IAC)
 
-## Requirements
+## Prerequisites
 
-This setup requires awscli docker and kubectl
-- aws-cli/2.7.24
-- Docker version 20.10.17
-- kubectl 
+- Kubectl — communication tool we will use to communicate between our Kubernetes cluster and our machine. Installation instructions available on https://kubernetes.io/docs/tasks/tools/install-kubectl/
+- AWS CLI /2.7.24 — AWS tool which we will use to issue commands related to AWS configurations. To install follow https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
+- Docker version 20.10.17 - an open platform for developing, shipping, and running applications. Installation instructions available on https://docs.docker.com/get-docker/
 
 
 
@@ -136,5 +135,15 @@ Make sure you are located in the directory that has Terraform files
 ```bash
 $ terraform destroy
 ```
+
+
+## Helpful links
+
+Issue with Adding ECR in AWS with Terraform (Elastic Container Registry): https://www.sysopsruntime.com/2021/07/10/create-elastic-container-registry-ecr-in-aws-with-terraform/
+
+Issue with Multiple security groups tagging: https://github.com/terraform-aws-modules/terraform-aws-eks/issues/1986
+
+
+
 
 
