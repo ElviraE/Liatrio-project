@@ -47,7 +47,8 @@ Apply with a region specified
 $ terraform -chdir=eks apply  -var="region=${region}" --auto-approve
 ```
 
-Update kubectl config
+Update Kubectl with EKS CONFIG Details
+
 aws eks  update-kubeconfig --name $(terraform -chdir=eks output -raw cluster_name) --region $(terraform -chdir=eks output -raw region)
 
 
@@ -66,7 +67,6 @@ Docker Run to test
 ```bash
 $ docker run -d --name timestampapi -p 5000:5000 timestampapi
 ```
-"
 
 
 
@@ -76,22 +76,26 @@ $ docker run -d --name timestampapi -p 5000:5000 timestampapi
 Authenticate docker with ecr
 Replace region and aws_account_id with your details
 '''bash
-aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query "Account" --output text).dkr.ecr.us-east-1.amazonaws.com
+aws ecr get-login-password --region $(terraform -chdir=eks output -raw region) | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query "Account" --output text).dkr.ecr.us-east-1.amazonaws.com
 '''
 
 
 Add tag to the image
 ```bash
-$docker image tag timestampapi:latest   $(terraform -chdir=eks output -raw ecr_registry_url)
+$ docker tag timestampapi $(terraform -chdir=eks output -raw ecr_registry_url)
 ```
 Pushing Docker image
 
 Push Image
 ```bash
-$ docker image push  $(terraform -chdir=eks output -raw ecr_registry_url):latest
+$ docker push  $(terraform -chdir=eks output -raw ecr_registry_url):latest
 ```
 
 ## Kubernetes Manifest
+
+Describe Image_Uri
+
+   Image_Uri=$(terraform -chdir=eks output -raw ecr_registry_url)
 
 Replace the image in deployment/api-deployment.yaml
 
@@ -99,7 +103,7 @@ Kubernete Deployment
 
 Pod
 ```bash
-$ cat deployment/api-deployment.yaml | sed "s/{{Image_Uri}}/$(terraform -chdir=eks output -raw ecr_registry_url)/g" | kubectl apply -f -
+$ cat deployment/api-deployment.yaml | sed "s|{{Image_Uri}}|$Image_Uri|" | kubectl apply -f -
 ```
 
 Service
@@ -107,8 +111,27 @@ Service
 $ kubectl apply -f deployment/service.yaml
 ```
 
+Print out our Service/LoadBalancer
 
-## Endpoints
 ```bash
-$ echo $(terraform -chdir=eks output -raw ecr_registry_url)
+$ kubectl get svc
 ```
+
+EXTERNAL_IP of a Load Balancer is our Point of Access
+
+
+
+
+## Cleanup
+
+Delete our Service/LoadBalancer
+```bash
+$ kubectl get svc
+```
+Make sure you are located in the directory that has Terraform files
+
+```bash
+$ terraform destroy
+```
+
+
