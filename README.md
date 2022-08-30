@@ -99,7 +99,7 @@ Describe Image_Uri
 
 Replace the image in deployment/api-deployment.yaml
 
-Kubernete Deployment
+Kubernetes Deployment
 
 Pod
 ```bash
@@ -118,7 +118,6 @@ $ kubectl get svc
 ```
 
 EXTERNAL_IP of a Load Balancer is our Point of Access
-
 
 
 
