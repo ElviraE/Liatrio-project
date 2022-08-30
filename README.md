@@ -124,10 +124,14 @@ EXTERNAL_IP of a Load Balancer is our Point of Access
 
 ## Cleanup
 
-Delete our Service/LoadBalancer
+Delete our Services
 ```bash
-$ kubectl get svc
+$ kubectl delete svc timestampapi-k8s-service
 ```
+```bash
+$ kubectl delete svc kubernetes
+```
+
 Make sure you are located in the directory that has Terraform files
 
 ```bash
