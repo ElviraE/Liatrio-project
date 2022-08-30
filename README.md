@@ -143,6 +143,8 @@ Issue with Adding ECR in AWS with Terraform (Elastic Container Registry): https:
 
 Issue with Multiple security groups tagging: https://github.com/terraform-aws-modules/terraform-aws-eks/issues/1986
 
+Issue with sed command to replace the image in kubernetes yaml file: https://stackoverflow.com/questions/60333077/sed-command-to-replace-the-image-in-kubernetes-yaml-file
+
 
 
 
