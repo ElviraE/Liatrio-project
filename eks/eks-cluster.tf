@@ -7,6 +7,9 @@ module "eks" {
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
+  node_security_group_tags = {
+    "kubernetes.io/cluster/${local.cluster_name}" = null
+  }
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
@@ -33,6 +36,9 @@ module "eks" {
       vpc_security_group_ids = [
         aws_security_group.node_group_one.id
       ]
+      
+      tags = {
+        ExtraTag = "extra-tag"}
     }
 
     two = {
@@ -51,6 +57,9 @@ module "eks" {
       vpc_security_group_ids = [
         aws_security_group.node_group_two.id
       ]
+
+      tags = {
+        ExtraTag = "extra-tag"}
     }
   }
 }

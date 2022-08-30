@@ -3,66 +3,38 @@
 [ "${DEBUG:-0}" = "1" ] && set -x
 set -u
 
-_main () {
-    _fail=0
-    region="$("$1")"
+_fail=0
+region="$("$1")"
 
-    echo 'Provisoning EKS Cluster'
-        try 
-            terraform -chdir=eks init
-            if [ -z "${region}" ];
-            then
-                terraform -chdir=eks apply --auto-approve
-            else
-                terraform -chdir=eks apply  -var="region=${region}" --auto-approve
-        catch 
-            echo "Raised an Error"
-
-    echo 'Update Kubectl with EKS CONFIG Details'
-    try 
-        aws eks --region $(terraform -chdir=eks output -raw region) update-kubeconfig --name $(terraform -chdir=eks output -raw cluster_name)
-    catch 
-        echo "Raised an Error"
+echo 'Provisioning EKS Cluster'
+        terraform -chdir=eks init
+        terraform -chdir=eks apply --auto-approve
 
 
+echo 'Update Kubectl with EKS CONFIG Details'
+    aws eks  update-kubeconfig --name $(terraform -chdir=eks output -raw cluster_name) --region $(terraform -chdir=eks output -raw region)
 
-    echo 'Update Kubectl with EKS CONFIG Details'
-    try 
-        aws eks  update-kubeconfig --name $(terraform -chdir=eks output -raw cluster_name) --region $(terraform -chdir=eks output -raw region)
-    catch 
-        echo "Raised an Error"
+echo 'Build Docker Image'
+    docker build -t timestampapi app
 
 
-    echo 'Build Docker Image'
-    try 
-        docker build --tag timestampapi app
-    catch 
-        echo "Raised an Error"
+echo 'Publish Docker Image'
+    aws ecr get-login-password --region $(terraform -chdir=eks output -raw region) | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query "Account" --output text).dkr.ecr.us-east-1.amazonaws.com
+    docker tag timestampapi $(terraform -chdir=eks output -raw ecr_registry_url)
+    docker push $(terraform -chdir=eks output -raw ecr_registry_url):latest
 
-    echo 'Publish Docker Image'
-    try 
-        aws ecr get-login-password --region $(terraform -chdir=eks output -raw region) | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query "Account" --output text).dkr.ecr.us-east-1.amazonaws.com 
-    docker image tag timestampapi:latest   $(terraform -chdir=eks output -raw ecr_registry_url)
-    docker image push  $(terraform -chdir=eks output -raw ecr_registry_url):latest
-    catch 
-        echo "Raised an Error"
 
-    echo 'Deploy with Kubernetes'
-    try 
-        cat deployment/api-deployment.yaml | sed "s/{{Image_Uri}}/$(terraform -chdir=eks output -raw ecr_registry_url)/g" | kubectl apply -f -
+echo 'Describe Image_Uri'
+    Image_Uri=$(terraform -chdir=eks output -raw ecr_registry_url)
+
+
+echo 'Deploy with Kubernetes'
+    cat deployment/api-deployment.yaml | sed "s|{{Image_Uri}}|$Image_Uri|" | kubectl apply -f -
 
         kubectl apply -f deployment/service.yaml
-    catch 
-        echo "Raised an Error"
 
-    
-    echo "Endpoint"
-    echo $(terraform -chdir=eks output -raw cluster_endpoint)
+echo 'Print out our Service/LoadBalancer'
+    kubectl get svc
 
-}
+echo "EXTERNAL_IP of a Load Balancer is our Point of Access"
 
-_main "$@"
-if [ $_fail -gt 0 ] ; then
-    echo "$0: Failed"
-    exit 1
-fi
