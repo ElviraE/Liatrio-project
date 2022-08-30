@@ -13,7 +13,7 @@ flask
 
 
 ## Primary Goals
- - To Write a rest api endpoint that is return a message and timestamp as json. 
+ - To Write a rest api endpoint that returns a message and timestamp as json. 
 
 
 ## Table of Contents
